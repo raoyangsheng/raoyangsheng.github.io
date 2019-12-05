@@ -9,13 +9,6 @@
   </url>
   
   <url>
-    <loc>https://raoyangsheng.com/about/index.html</loc>
-    
-    <lastmod>2019-12-05T06:12:56.157Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://raoyangsheng.com/categories/index.html</loc>
     
     <lastmod>2019-12-05T06:12:56.157Z</lastmod>
@@ -23,14 +16,21 @@
   </url>
   
   <url>
-    <loc>https://raoyangsheng.com/2017/10/it-redis-01.html</loc>
+    <loc>https://raoyangsheng.com/about/index.html</loc>
+    
+    <lastmod>2019-12-05T06:12:56.157Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://raoyangsheng.com/2017/08/it-server-nginx-01.html</loc>
     
     <lastmod>2019-12-05T06:12:56.156Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://raoyangsheng.com/2017/08/it-server-nginx-01.html</loc>
+    <loc>https://raoyangsheng.com/2017/10/it-redis-01.html</loc>
     
     <lastmod>2019-12-05T06:12:56.156Z</lastmod>
     
@@ -93,13 +93,6 @@
   </url>
   
   <url>
-    <loc>https://raoyangsheng.com/2015/10/it-java-calc-forkjoin.html</loc>
-    
-    <lastmod>2019-12-05T06:12:56.152Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://raoyangsheng.com/2015/10/it-java-tool-01.html</loc>
     
     <lastmod>2019-12-05T06:12:56.152Z</lastmod>
@@ -107,14 +100,21 @@
   </url>
   
   <url>
-    <loc>https://raoyangsheng.com/2017/10/it-git-02.html</loc>
+    <loc>https://raoyangsheng.com/2015/10/it-java-calc-forkjoin.html</loc>
+    
+    <lastmod>2019-12-05T06:12:56.152Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://raoyangsheng.com/2017/10/it-git-01.html</loc>
     
     <lastmod>2019-12-05T06:12:56.151Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://raoyangsheng.com/2017/10/it-git-01.html</loc>
+    <loc>https://raoyangsheng.com/2017/10/it-git-02.html</loc>
     
     <lastmod>2019-12-05T06:12:56.151Z</lastmod>
     
