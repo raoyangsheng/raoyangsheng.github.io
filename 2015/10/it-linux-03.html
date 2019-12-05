@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+
+    
+<!-- Tencent Speed -->
+<script>var _speedMark = new Date()</script>
+<!-- End Tencent Speed -->
+<!-- Tencent Analysis -->
+<script async src="//tajs.qq.com/stats?sId=66070201"></script>
+<!-- End Tencent Analysis -->
+
+
+    
+<!-- Baidu Tongji -->
+<script>var _hmt = _hmt || []</script>
+<script async src="//hm.baidu.com/hm.js?e70991547eea438f6d8fd4449418c1bb"></script>
+<!-- End Baidu Tongji -->
+
+
+
+<!-- Baidu Push -->
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<!-- End Baidu Push -->
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>Linux下如何释放cache内存(drop_caches) | Jason Rao&#39;s Blog | 态度决定一切 细节决定成败</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="Linux">
+    <meta name="description" content="最近使用的linux系统内存缓存越来越大，free内存越来越小，后来从网上找到资料完美解决。  第1步：执行 cat /proc/sys/vm/drop_caches名称，查看缓存值，默认值为0。（1-清空页缓存；2-清空inode和目录树缓存；3-清空所有缓存）第2步：执行sync命令，手动执行sync命令（描述：sync 命令运行 sync 子例程。如果必须停止系统，则运行 sync 命令以确">
+<meta name="keywords" content="Linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux下如何释放cache内存(drop_caches)">
+<meta property="og:url" content="https://raoyangsheng.com/2015/10/it-linux-03.html">
+<meta property="og:site_name" content="Jason Rao&#39;s Blog">
+<meta property="og:description" content="最近使用的linux系统内存缓存越来越大，free内存越来越小，后来从网上找到资料完美解决。  第1步：执行 cat /proc/sys/vm/drop_caches名称，查看缓存值，默认值为0。（1-清空页缓存；2-清空inode和目录树缓存；3-清空所有缓存）第2步：执行sync命令，手动执行sync命令（描述：sync 命令运行 sync 子例程。如果必须停止系统，则运行 sync 命令以确">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://raoyangsheng.com/img/linux/2015-10-01-2011-linux-01.png">
+<meta property="og:updated_time" content="2019-12-05T06:12:56.154Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux下如何释放cache内存(drop_caches)">
+<meta name="twitter:description" content="最近使用的linux系统内存缓存越来越大，free内存越来越小，后来从网上找到资料完美解决。  第1步：执行 cat /proc/sys/vm/drop_caches名称，查看缓存值，默认值为0。（1-清空页缓存；2-清空inode和目录树缓存；3-清空所有缓存）第2步：执行sync命令，手动执行sync命令（描述：sync 命令运行 sync 子例程。如果必须停止系统，则运行 sync 命令以确">
+<meta name="twitter:image" content="https://raoyangsheng.com/img/linux/2015-10-01-2011-linux-01.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="Jason Rao&#39;s Blog" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu"  >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar1.png">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">Jason Rao</h5>
+          <a href="mailto:76198830@qq.com" title="76198830@qq.com" class="mail">76198830@qq.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                归档
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                标签
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                分类
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Linux下如何释放cache内存(drop_caches)</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Linux下如何释放cache内存(drop_caches)</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2015-10-01T12:11:12.000Z" itemprop="datePublished" class="page-time">
+  2015年10月01日
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/Linux/">Linux</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#第1步：执行-cat-proc-sys-vm-drop-caches名称，查看缓存值，默认值为0。（1-清空页缓存；2-清空inode和目录树缓存；3-清空所有缓存）"><span class="post-toc-number">1.</span> <span class="post-toc-text">第1步：执行 cat /proc/sys/vm/drop_caches名称，查看缓存值，默认值为0。（1-清空页缓存；2-清空inode和目录树缓存；3-清空所有缓存）</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#第2步：执行sync命令，手动执行sync命令（描述：sync-命令运行-sync-子例程。如果必须停止系统，则运行-sync-命令以确保文件系统的完整性。sync-命令将所有未写的系统缓冲区写到磁盘中，包含已修改的-i-node、已延迟的块-I-O-和读写映射文件）"><span class="post-toc-number">2.</span> <span class="post-toc-text">第2步：执行sync命令，手动执行sync命令（描述：sync 命令运行 sync 子例程。如果必须停止系统，则运行 sync 命令以确保文件系统的完整性。sync 命令将所有未写的系统缓冲区写到磁盘中，包含已修改的 i-node、已延迟的块 I/O 和读写映射文件）</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#第3步：执行echo-3-gt-gt-proc-sys-vm-drop-caches-命令，将drop-caches值改成3。"><span class="post-toc-number">3.</span> <span class="post-toc-text">第3步：执行echo 3 &gt;&gt; /proc/sys/vm/drop_caches 命令，将drop_caches值改成3。</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-it-linux-03"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Linux下如何释放cache内存(drop_caches)</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2015年10月01日 20:11:12" datetime="2015-10-01T12:11:12.000Z"  itemprop="datePublished">2015年10月01日</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/Linux/">Linux</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p><strong>最近使用的linux系统内存缓存越来越大，free内存越来越小，后来从网上找到资料完美解决。</strong> </p>
+<h4 id="第1步：执行-cat-proc-sys-vm-drop-caches名称，查看缓存值，默认值为0。（1-清空页缓存；2-清空inode和目录树缓存；3-清空所有缓存）"><a href="#第1步：执行-cat-proc-sys-vm-drop-caches名称，查看缓存值，默认值为0。（1-清空页缓存；2-清空inode和目录树缓存；3-清空所有缓存）" class="headerlink" title="第1步：执行 cat /proc/sys/vm/drop_caches名称，查看缓存值，默认值为0。（1-清空页缓存；2-清空inode和目录树缓存；3-清空所有缓存）"></a>第1步：执行 cat /proc/sys/vm/drop_caches名称，查看缓存值，默认值为0。（1-清空页缓存；2-清空inode和目录树缓存；3-清空所有缓存）</h4><h4 id="第2步：执行sync命令，手动执行sync命令（描述：sync-命令运行-sync-子例程。如果必须停止系统，则运行-sync-命令以确保文件系统的完整性。sync-命令将所有未写的系统缓冲区写到磁盘中，包含已修改的-i-node、已延迟的块-I-O-和读写映射文件）"><a href="#第2步：执行sync命令，手动执行sync命令（描述：sync-命令运行-sync-子例程。如果必须停止系统，则运行-sync-命令以确保文件系统的完整性。sync-命令将所有未写的系统缓冲区写到磁盘中，包含已修改的-i-node、已延迟的块-I-O-和读写映射文件）" class="headerlink" title="第2步：执行sync命令，手动执行sync命令（描述：sync 命令运行 sync 子例程。如果必须停止系统，则运行 sync 命令以确保文件系统的完整性。sync 命令将所有未写的系统缓冲区写到磁盘中，包含已修改的 i-node、已延迟的块 I/O 和读写映射文件）"></a>第2步：执行sync命令，手动执行sync命令（描述：sync 命令运行 sync 子例程。如果必须停止系统，则运行 sync 命令以确保文件系统的完整性。sync 命令将所有未写的系统缓冲区写到磁盘中，包含已修改的 i-node、已延迟的块 I/O 和读写映射文件）</h4><h4 id="第3步：执行echo-3-gt-gt-proc-sys-vm-drop-caches-命令，将drop-caches值改成3。"><a href="#第3步：执行echo-3-gt-gt-proc-sys-vm-drop-caches-命令，将drop-caches值改成3。" class="headerlink" title="第3步：执行echo 3 &gt;&gt; /proc/sys/vm/drop_caches 命令，将drop_caches值改成3。"></a>第3步：执行echo 3 &gt;&gt; /proc/sys/vm/drop_caches 命令，将drop_caches值改成3。</h4><p>此时已经完成，可执行 free -m 命令查看是否生效。</p>
+<p><code>如图：</code><br><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="/img/linux/2015-10-01-2011-linux-01.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2019-12-05T06:12:56.154Z" itemprop="dateUpdated">2019年12月05日 14:12:56</time>
+</span><br>
+
+
+        
+    </div>
+    
+    <footer>
+        <a href="https://raoyangsheng.com">
+            <img src="/img/avatar1.png" alt="Jason Rao">
+            Jason Rao
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://raoyangsheng.com/2015/10/it-linux-03.html&title=《Linux下如何释放cache内存(drop_caches)》 — Jason Rao's Blog&pic=https://raoyangsheng.com/img/avatar1.png" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://raoyangsheng.com/2015/10/it-linux-03.html&title=《Linux下如何释放cache内存(drop_caches)》 — Jason Rao's Blog&source=饶扬胜,饶扬胜博客,架构师博客,全栈技术,分布式架构,Jason Rao,raoyangsheng" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://raoyangsheng.com/2015/10/it-linux-03.html" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Linux下如何释放cache内存(drop_caches)》 — Jason Rao's Blog&url=https://raoyangsheng.com/2015/10/it-linux-03.html&via=https://raoyangsheng.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://raoyangsheng.com/2015/10/it-linux-03.html" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2015/10/it-backend-zk-01.html" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Zookeeper 集群搭建</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2015/10/it-linux-02.html" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Linux修改主机名称、DNS解析</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Valine Comments -->
+    <div class="comments vcomment" id="comments"></div>
+    <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+    <script src="//unpkg.com/valine@latest/dist/Valine.min.js"></script>
+    <!-- Valine Comments script -->
+    <script>
+        var GUEST_INFO = ['nick','mail','link'];
+        var guest_info = 'nick,mail,link'.split(',').filter(function(item){
+          return GUEST_INFO.indexOf(item) > -1
+        });
+        new Valine({
+            el: '#comments',
+            notify: 'false' == 'true',
+            verify: 'false' == 'true',
+            appId: "V4nHXQbS7PkL3LklG3NCKoRB-gzGzoHsz",
+            appKey: "9UUGXtqUteOGsDhhYR12P9as",
+            avatar: "mm",
+            placeholder: "……在这里说点什么吧",
+            guest_info: guest_info.length == 0 ? GUEST_INFO : guest_info,
+            pageSize: "10"
+        })
+    </script>
+    <!-- Valine Comments end -->
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏~
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/weixinpay.png" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/weixinpay.png" data-alipay="/img/alipay.png">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <!-- 
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>博客内容遵循 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+        </p>
+    </div>
+    -->
+    <div class="bottom">
+        <p><span>Jason Rao &copy; 2010 - 2019</span>
+            <span>
+                    <!-- <a href="http://www.beian.miit.gov.cn/" target="_blank">粤ICP备17034104号-1</a><br> -->
+
+                
+                <a href="http://www.beian.miit.gov.cn/" target="_blank">粤ICP备19120775号</a><br>
+                  
+                
+            </span>
+        </p>
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+    </div>
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+    </script>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://raoyangsheng.com/2015/10/it-linux-03.html&title=《Linux下如何释放cache内存(drop_caches)》 — Jason Rao's Blog&pic=https://raoyangsheng.com/img/avatar1.png" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://raoyangsheng.com/2015/10/it-linux-03.html&title=《Linux下如何释放cache内存(drop_caches)》 — Jason Rao's Blog&source=饶扬胜,饶扬胜博客,架构师博客,全栈技术,分布式架构,Jason Rao,raoyangsheng" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://raoyangsheng.com/2015/10/it-linux-03.html" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Linux下如何释放cache内存(drop_caches)》 — Jason Rao's Blog&url=https://raoyangsheng.com/2015/10/it-linux-03.html&via=https://raoyangsheng.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://raoyangsheng.com/2015/10/it-linux-03.html" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMYAAADGCAAAAACs8KCBAAACMklEQVR42u3a22rrMBAF0P7/T+dAnw6UKHuP3ILlpaeSxLGWCxPN5esrXq/v9fOV/9f68+ur1t922cLAwLgt47Vca8bs3R3eWyoGBsYDGOsg2wbc9SbyeyWfx8DAwPi5ofb264C7Du4YGBgYs4C7c+P2GIqBgYHRJrFtatqmuH+Ui2NgYNyQ0W7lL//+xf4GBgbGTRiv0dpvdibtz2I/GBgYRzPWpbSr2o37mCgQY2BgHM1ImgF52N05n7Ytz7f3wsDAOIixLoTtl/XzQJw3Tet6HgYGxs0Z7ZGuLeXXbcjgQWBgYDyN0d6+3VyC3y/AYWBgPIGRH9dmQ2BtuluPXGBgYBzNyMtkSXo5exztVR8eEwYGxnGMZOuzMYt1uEy+P3m3+A9gYGDcnJGX42cjEW0LoS4LYmBgPIDRDn4lB8SrRiuiIyMGBsZjGNcGxHYUbOvRYGBgHM3Im4t56MyblDuDGhgYGM9h5EX5tnA/e0xtq+BDLo6BgXEEIy+x5YW2fIuzUYy3u8LAwHgMY7+INmsYXJbEYmBgHM1IYDtNgt9gfOhyYGBgHMRImpdt+tri28Zn/RuCgYFxW8asfJ+Hy52rihCPgYFxNGM2EpEH6NnxLm9CYGBgPIfRpqzDxLIs7dUhFQMD4wGMZEhi1ozMD447CTYGBgZGHnz3WwjDwhwGBgbGqAQ2POTNMm8MDIwHMPLx0/zY1w6z7hwcMTAwzmbsT2q0Rbq86NaW6jAwMI5j/AP3LJNhlbnjiAAAAABJRU5ErkJggg==" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+</body>
+</html>

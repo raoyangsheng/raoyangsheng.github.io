@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+
+    
+<!-- Tencent Speed -->
+<script>var _speedMark = new Date()</script>
+<!-- End Tencent Speed -->
+<!-- Tencent Analysis -->
+<script async src="//tajs.qq.com/stats?sId=66070201"></script>
+<!-- End Tencent Analysis -->
+
+
+    
+<!-- Baidu Tongji -->
+<script>var _hmt = _hmt || []</script>
+<script async src="//hm.baidu.com/hm.js?e70991547eea438f6d8fd4449418c1bb"></script>
+<!-- End Baidu Tongji -->
+
+
+
+<!-- Baidu Push -->
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<!-- End Baidu Push -->
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>Java并行计算方案 | Jason Rao&#39;s Blog | 态度决定一切 细节决定成败</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="JAVA">
+    <meta name="description" content="a、ForkJoin描述：   ForkJoin是Java7提供的原生多线程并行处理框架，其基本思想是将大任务分割成小任务，最后将小任务聚合起来得到结果。 fork是分解的意思, join是收集的意思. 它非常类似于HADOOP提供的MapReduce框架，只是MapReduce的任务可以针对集群内的所有计算节点，可以充分利用集群的能力完成计算任务。ForkJoin更加类似于单机版的MapRedu">
+<meta name="keywords" content="JAVA">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java并行计算方案">
+<meta property="og:url" content="https://raoyangsheng.com/2015/10/it-java-calc-forkjoin.html">
+<meta property="og:site_name" content="Jason Rao&#39;s Blog">
+<meta property="og:description" content="a、ForkJoin描述：   ForkJoin是Java7提供的原生多线程并行处理框架，其基本思想是将大任务分割成小任务，最后将小任务聚合起来得到结果。 fork是分解的意思, join是收集的意思. 它非常类似于HADOOP提供的MapReduce框架，只是MapReduce的任务可以针对集群内的所有计算节点，可以充分利用集群的能力完成计算任务。ForkJoin更加类似于单机版的MapRedu">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://raoyangsheng.com/img/java/2015-10-12-1512-forkjoin-01.png">
+<meta property="og:image" content="https://raoyangsheng.com/img/java/2015-10-12-1512-forkjoin-02.png">
+<meta property="og:updated_time" content="2019-12-05T06:12:56.152Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java并行计算方案">
+<meta name="twitter:description" content="a、ForkJoin描述：   ForkJoin是Java7提供的原生多线程并行处理框架，其基本思想是将大任务分割成小任务，最后将小任务聚合起来得到结果。 fork是分解的意思, join是收集的意思. 它非常类似于HADOOP提供的MapReduce框架，只是MapReduce的任务可以针对集群内的所有计算节点，可以充分利用集群的能力完成计算任务。ForkJoin更加类似于单机版的MapRedu">
+<meta name="twitter:image" content="https://raoyangsheng.com/img/java/2015-10-12-1512-forkjoin-01.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="Jason Rao&#39;s Blog" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu"  >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar1.png">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">Jason Rao</h5>
+          <a href="mailto:76198830@qq.com" title="76198830@qq.com" class="mail">76198830@qq.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                归档
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                标签
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                分类
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Java并行计算方案</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Java并行计算方案</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2015-10-12T07:12:27.000Z" itemprop="datePublished" class="page-time">
+  2015年10月12日
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/后端/">后端</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+
+<article id="post-it-java-calc-forkjoin"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Java并行计算方案</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2015年10月12日 15:12:27" datetime="2015-10-12T07:12:27.000Z"  itemprop="datePublished">2015年10月12日</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/后端/">后端</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p><strong>a、ForkJoin描述：</strong> </p>
+<ul>
+<li>ForkJoin是Java7提供的原生多线程并行处理框架，其基本思想是将大任务分割成小任务，最后将小任务聚合起来得到结果。</li>
+<li>fork是分解的意思, join是收集的意思. 它非常类似于HADOOP提供的MapReduce框架，只是MapReduce的任务可以针对集群内的所有计算节点，可以充分利用集群的能力完成计算任务。ForkJoin更加类似于单机版的MapReduce。</li>
+</ul>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="/img/java/2015-10-12-1512-forkjoin-01.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<p><strong>b、注意事项：</strong> </p>
+<ul>
+<li>在fork/join框架中，若某个子问题由于等待另一个子问题的完成而无法继续执行。那么处理该子问题的线程会主动寻找其他尚未运行完成的子问题来执行。这种方式减少了线程的等待时间，提高了性能。子问题中应该避免使用synchronized关键词或其他方式方式的同步。也不应该是一阻塞IO或过多的访问共享变量。在理想情况下，每个子问题的实现中都应该只进行CPU相关的计算，并且只适用每个问题的内部对象。<strong>唯一的同步应该只发生在子问题和创建它的父问题之间。</strong></li>
+</ul>
+<p><strong>c、Fork/Join使用两个类完成以上两件事情：</strong></p>
+<ul>
+<li><p>ForkJoinTask: 我们要使用ForkJoin框架，必须首先创建一个ForkJoin任务。它提供在任务中执行fork()和join的操作机制，ForkJoinTask实现了Future接口，可以按照Future接口的方式来使用。在ForkJoinTask类中之重要的两个方法fork和join。fork方法用以一部方式启动任务的执行，join方法则等待任务完成并返回指向结果。在创建自己的任务是，最好不要直接继承自ForkJoinTask类，而要继承自ForkJoinTask类的子类RecurisiveTask或RecurisiveAction类。<br><code>1. RecursiveAction，用于没有返回结果的任务</code><br><code>2. RecursiveTask，用于有返回值的任务</code></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="/img/java/2015-10-12-1512-forkjoin-02.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+</li>
+<li><p>ForkJoinPool：task要通过ForkJoinPool来执行，分割的子任务也会添加到当前工作线程的双端队列中，进入队列的头部。当一个工作线程中没有任务时，会从其他工作线程的队列尾部获取一个任务。</p>
+</li>
+<li><p>2个构造方法</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ForkJoinPool(int parallelism)  创建一个包含parallelism个并行线程的ForkJoinPool。</span><br><span class="line">ForkJoinPool()  以Runtime.availableProcessors()方法的返回值作为parallelism参数来创建ForkJoinPool。</span><br></pre></td></tr></table></figure>
+<ul>
+<li>3种方式启动</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">异步执行        　 execute(ForkJoinTask)    　　　　 ForkJoinTask.fork</span><br><span class="line">等待获取结果    　　invoke(ForkJoinTask)    　　　　  ForkJoinTask.invoke</span><br><span class="line">执行,获取Future    submit(ForkJoinTask)  　　　　　　ForkJoinTask.fork(ForkJoinTask are Futures)</span><br></pre></td></tr></table></figure>
+<p><strong>d、异常处理: ：</strong></p>
+<ul>
+<li><p>ForkJoinTask在执行的时候可能会抛出异常，但是没办法在主线程里直接捕获异常，所以ForkJoinTask提供了isCompletedAbnormally()方法来检查任务是否已经抛出异常或已经被取消了，并且可以通过ForkJoinTask的getException方法获取异常.</p>
+</li>
+<li><p>getException方法返回Throwable对象，如果任务被取消了则返回CancellationException。如果任务没有完成或者没有抛出异常则返回null。</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if(task.isCompletedAbnormally()) &#123;</span><br><span class="line">    System.out.println(task.getException());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> <strong>e、代码展示</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">import java.util.concurrent.ForkJoinPool</span><br><span class="line">import java.util.concurrent.ForkJoinTask</span><br><span class="line">import java.util.concurrent.RecursiveTask</span><br><span class="line">/**</span><br><span class="line"> * fork</span><br><span class="line"> * 对一个大数组进行并行求和的RecursiveTask</span><br><span class="line"> *</span><br><span class="line"> * 大任务可以拆成小任务，小任务还可以继续拆成更小的任务，最后把任务的结果汇总合并，得到最终结果，这种模型就是Fork/Join模型。</span><br><span class="line"> Java7引入了Fork/Join框架，我们通过RecursiveTask这个类就可以方便地实现Fork/Join模式。</span><br><span class="line"> * Created by wenbronk on 2017/7/13.</span><br><span class="line"> */</span><br><span class="line">class ForkJoinTest extends RecursiveTask&lt;Long&gt; &#123;</span><br><span class="line"></span><br><span class="line">    static final int THRESHOLD = 100</span><br><span class="line">    long[] array</span><br><span class="line">    int start</span><br><span class="line">    int end</span><br><span class="line"></span><br><span class="line">    ForkJoinTest(long[] array, int start, int end) &#123;</span><br><span class="line">        this.start = start</span><br><span class="line">        this.end = end</span><br><span class="line">        this.array = array</span><br><span class="line">    &#125;</span><br><span class="line">    @Override</span><br><span class="line">    protected Long compute() &#123;</span><br><span class="line"></span><br><span class="line">        if (end - start &lt; THRESHOLD) &#123;</span><br><span class="line">            long sum = 0</span><br><span class="line">            for (int i = start; i &lt; end; i++) &#123;</span><br><span class="line">                sum += array[i]</span><br><span class="line">            &#125;</span><br><span class="line">            try &#123;</span><br><span class="line">                Thread.sleep(100)</span><br><span class="line">            &#125; catch (Exception e) &#123;</span><br><span class="line">                e.printStackTrace()</span><br><span class="line">            &#125;</span><br><span class="line">            println String.format(&apos;compute %d %d = %d&apos;, start, end, sum)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // 对于大任务, 分多线程执行</span><br><span class="line">        int middle = (end + start) / 2</span><br><span class="line">        println String.format(&apos;split %d %d =&gt; %d %d, %d %d&apos;, start, end, start, middle, middle, end)</span><br><span class="line"></span><br><span class="line">        def subtask1 = new ForkJoinTest(this.array, start, middle);</span><br><span class="line">        def subtask2 = new ForkJoinTest(this.array, middle, end);</span><br><span class="line">        invokeAll(subtask1, subtask2)</span><br><span class="line"></span><br><span class="line">        Long subresult1 = subtask1.join()</span><br><span class="line">        Long subresult2 = subtask2.join()</span><br><span class="line"></span><br><span class="line">        Long result = subresult1 + subresult2</span><br><span class="line"></span><br><span class="line">        System.out.println(&quot;result = &quot; + subresult1 + &quot; + &quot; + subresult2 + &quot; ==&gt; &quot; + result);</span><br><span class="line">        return result</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) throws Exception &#123;</span><br><span class="line">        // 创建随机数组成的数组:</span><br><span class="line">        long[] array = new long[400];</span><br><span class="line">//        fillRandom(array);</span><br><span class="line">        // fork/join task:</span><br><span class="line">        ForkJoinPool fjp = new ForkJoinPool(4); // 最大并发数4</span><br><span class="line">        ForkJoinTask&lt;Long&gt; task = new ForkJoinTest(array, 0, array.length);</span><br><span class="line">        long startTime = System.currentTimeMillis();</span><br><span class="line">        Long result = fjp.invoke(task);</span><br><span class="line">        long endTime = System.currentTimeMillis();</span><br><span class="line">        System.out.println(&quot;Fork/join sum: &quot; + result + &quot; in &quot; + (endTime - startTime) + &quot; ms.&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> <strong>f、java代码的实现</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">package com.doordu.pingan.demo;</span><br><span class="line"></span><br><span class="line">import java.util.concurrent.ExecutionException;</span><br><span class="line">import java.util.concurrent.ForkJoinPool;</span><br><span class="line">import java.util.concurrent.ForkJoinTask;</span><br><span class="line">import java.util.concurrent.RecursiveTask;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * forkjoin的简单易用</span><br><span class="line"> * Created by wenbronk on 2017/7/26.</span><br><span class="line"> */</span><br><span class="line">public class CountTask extends RecursiveTask&lt;Integer&gt;&#123;</span><br><span class="line">    private volatile static int count = 0;</span><br><span class="line">    private int start;</span><br><span class="line">    private int end;</span><br><span class="line"></span><br><span class="line">    public CountTask(int start, int end) &#123;</span><br><span class="line">        this.start = start;</span><br><span class="line">        this.end = end;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static final int threadhold = 2;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    protected Integer compute() &#123;</span><br><span class="line">        int sum = 0;</span><br><span class="line">        System.out.println(&quot;开启了一条线程单独干: &quot; + count++);</span><br><span class="line">        // 如果任务足够小, 就直接执行</span><br><span class="line">        boolean canCompute = (end - start) &lt;= threadhold;</span><br><span class="line">        if (canCompute) &#123;</span><br><span class="line">            for (int i = start; i &lt;= end; i++) &#123;</span><br><span class="line">                sum += i;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;else &#123;</span><br><span class="line">            //任务大于阈值, 分裂为2个任务</span><br><span class="line">            int middle = (start + end) / 2;</span><br><span class="line">            CountTask countTask1 = new CountTask(start, middle);</span><br><span class="line">            CountTask countTask2 = new CountTask(middle + 1, end);</span><br><span class="line"></span><br><span class="line">            // 开启线程</span><br><span class="line">//            countTask1.fork();</span><br><span class="line">//            countTask2.fork();</span><br><span class="line">            invokeAll(countTask1, countTask2);</span><br><span class="line"></span><br><span class="line">            Integer join1 = countTask1.join();</span><br><span class="line">            Integer join2 = countTask2.join();</span><br><span class="line"></span><br><span class="line">            // 结果合并</span><br><span class="line">            sum = join1 + join2;</span><br><span class="line">        &#125;</span><br><span class="line">        return sum;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    // 测试</span><br><span class="line">    public static void main(String[] args) throws ExecutionException, InterruptedException &#123;</span><br><span class="line">        ForkJoinPool forkJoinPool = new ForkJoinPool();</span><br><span class="line"></span><br><span class="line">        CountTask countTask = new CountTask(1, 100);</span><br><span class="line">        ForkJoinTask&lt;Integer&gt; result = forkJoinPool.submit(countTask);</span><br><span class="line">        System.out.println(result.get());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> <strong>g、work-stealing</strong></p>
+<ul>
+<li>g-1 forkjoin 框架是有 work-steal 机制的，这个机制主要功能是：<br><code>“空闲的” worker thread 从其它 worker thread 的 workQueue 里取得“未执行”的 task 然后执行。</code></li>
+<li>g-2 具体细节机制如下：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">1、每个 worker thread 维护自己的 scheduling 队列中的“可运行的”task - 队列是一个双向队列（称作：deques），支持 LIFO 和 FIFO 操作。</span><br><span class="line">2、在task 中生成的“子task”，会被放进生成它的 task 所在的 worker thread 的 双向队列。</span><br><span class="line">3、worker thread 处理双向队列中的 task 时，使用的是 LIFO 规则（最后进来的，最先被处理）</span><br><span class="line">4、当worker thread 的队列时没有任务可执行时，它会随机地偷取别的 worker thread 的 work queue 里的 task，然后执行它。在偷取时，使用的是 FIFO 规则，即偷取别人队列里“最先进入”队列的 task。</span><br><span class="line">5、当 worker thread 执行时，遇到了一个join操作（例如：newTask.join），它会暂停当前的 task </span><br><span class="line">的处理，而来处理这个join操作所要执行的任务内容。直到这个join操作的任务执行完后，才会返回刚才暂停任务，继续执行被暂停任务的其它内容。所有 task 都会在不进行“阻塞”情况下完成。 </span><br><span class="line">（这里的“阻塞”的意思，个人理解为不是IO操作的那种阻塞，而是在任务调试时，没有具体的“阻塞”处理（例如：ArrayBlockingQueue的那种阻塞），或是没有用“阻塞的方式”进行任务调度）</span><br><span class="line"></span><br><span class="line">之前以为每次调用 fork 方法，都会生成一个线程，看了源码和进行Debug后才知道：根据构造函数中的parallelism值来，决定是否启动新线程。 </span><br><span class="line">在 fork 方法中，((ForkJoinWorkerThread)t).workQueue.push(this)这语句会把任务加到“当前线程的workQueue”里，进行排队。然后调用signalWork方法，来看是否还可以启动新线程来处理“未分配任务”。如果可以，就启动新线程处理任务。</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">当 worker thread 没有要执行的 task 或者偷取任务失败时，就会进行暂时等待处理（通过yield，sleep，或者调整优先度等方式），过一段时间再重试看看有没有任务可以执行。如果所有的 worker thread 都处于闲置状态， </span><br><span class="line">等待上层的发送 task 过来的话，就不会进行重试（看是否有任务可以执行）。</span><br></pre></td></tr></table></figure>
+<ul>
+<li>g-3 work-stealing的“LIFO和FIFO”处理方式有两点好处：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1、减少了取 task 时的竞争。worker thread 在执行自己队列任务时，是使用从尾部取。别人从它的队列里偷取任务时，是从队列头部取。所以减少了取时的竞争。</span><br><span class="line"></span><br><span class="line">2、被偷取的任务，一般都是最早入队列的任务。这种任务一般来说，都是非常大的任务，是那种需要进行递归分析的的大任务，而不是那种分解完的小任务。所以，减少了任务偷取的次数。 </span><br><span class="line">（注意：在实现上，worker thread 在执行自己队列任务时，不总是 LIFO 方式，可以通过构造函数修改成 FIFO 方式）</span><br></pre></td></tr></table></figure>
+<ul>
+<li>g-4 关于双向队列</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">双向队列在实现方面的主要挑战是“同步”和“its avoidance（不知道怎么翻译）”。即使JVM优化了同步功能，每次 push 和 pop 时都要获取锁的这种操作，也会变成瓶颈。但是，一些策略的改变，提供了一种解决方案：</span><br><span class="line"></span><br><span class="line">push 和 pop 操作，只针对本线程内的队列。</span><br><span class="line">“偷取”操作可以很方便地通过一个“偷取锁”，来进行限制（双向锁在情况需要时，也可以使“偷取”操作失效）。因此，在队列两端的同步问题上的控制操作，就会减少。</span><br><span class="line">当双向队列要变成空时，可以对pop 或“偷取”操作进行控制。不然，这两个操作要被担保，可以操作disjoint elements of the array</span><br></pre></td></tr></table></figure>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2019-12-05T06:12:56.152Z" itemprop="dateUpdated">2019年12月05日 14:12:56</time>
+</span><br>
+
+
+        
+    </div>
+    
+    <footer>
+        <a href="https://raoyangsheng.com">
+            <img src="/img/avatar1.png" alt="Jason Rao">
+            Jason Rao
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JAVA/">JAVA</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://raoyangsheng.com/2015/10/it-java-calc-forkjoin.html&title=《Java并行计算方案》 — Jason Rao's Blog&pic=https://raoyangsheng.com/img/avatar1.png" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://raoyangsheng.com/2015/10/it-java-calc-forkjoin.html&title=《Java并行计算方案》 — Jason Rao's Blog&source=饶扬胜,饶扬胜博客,架构师博客,全栈技术,分布式架构,Jason Rao,raoyangsheng" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://raoyangsheng.com/2015/10/it-java-calc-forkjoin.html" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Java并行计算方案》 — Jason Rao's Blog&url=https://raoyangsheng.com/2015/10/it-java-calc-forkjoin.html&via=https://raoyangsheng.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://raoyangsheng.com/2015/10/it-java-calc-forkjoin.html" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2015/10/it-linux-centos-01.html" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">CentOS开机网络启动设置问题</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2015/10/it-db-mysql-01.html" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">问题记录-Mysql 1449 The user specified as a definer (&#39;root&#39;@&#39;%&#39;) does not exist 解决方法</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Valine Comments -->
+    <div class="comments vcomment" id="comments"></div>
+    <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+    <script src="//unpkg.com/valine@latest/dist/Valine.min.js"></script>
+    <!-- Valine Comments script -->
+    <script>
+        var GUEST_INFO = ['nick','mail','link'];
+        var guest_info = 'nick,mail,link'.split(',').filter(function(item){
+          return GUEST_INFO.indexOf(item) > -1
+        });
+        new Valine({
+            el: '#comments',
+            notify: 'false' == 'true',
+            verify: 'false' == 'true',
+            appId: "V4nHXQbS7PkL3LklG3NCKoRB-gzGzoHsz",
+            appKey: "9UUGXtqUteOGsDhhYR12P9as",
+            avatar: "mm",
+            placeholder: "……在这里说点什么吧",
+            guest_info: guest_info.length == 0 ? GUEST_INFO : guest_info,
+            pageSize: "10"
+        })
+    </script>
+    <!-- Valine Comments end -->
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏~
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/weixinpay.png" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/weixinpay.png" data-alipay="/img/alipay.png">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <!-- 
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>博客内容遵循 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+        </p>
+    </div>
+    -->
+    <div class="bottom">
+        <p><span>Jason Rao &copy; 2010 - 2019</span>
+            <span>
+                    <!-- <a href="http://www.beian.miit.gov.cn/" target="_blank">粤ICP备17034104号-1</a><br> -->
+
+                
+                <a href="http://www.beian.miit.gov.cn/" target="_blank">粤ICP备19120775号</a><br>
+                  
+                
+            </span>
+        </p>
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+    </div>
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+    </script>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://raoyangsheng.com/2015/10/it-java-calc-forkjoin.html&title=《Java并行计算方案》 — Jason Rao's Blog&pic=https://raoyangsheng.com/img/avatar1.png" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://raoyangsheng.com/2015/10/it-java-calc-forkjoin.html&title=《Java并行计算方案》 — Jason Rao's Blog&source=饶扬胜,饶扬胜博客,架构师博客,全栈技术,分布式架构,Jason Rao,raoyangsheng" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://raoyangsheng.com/2015/10/it-java-calc-forkjoin.html" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Java并行计算方案》 — Jason Rao's Blog&url=https://raoyangsheng.com/2015/10/it-java-calc-forkjoin.html&via=https://raoyangsheng.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://raoyangsheng.com/2015/10/it-java-calc-forkjoin.html" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMYAAADGCAAAAACs8KCBAAACMUlEQVR42u3aQW7DMAwF0dz/0u62QGJ7Pqm0MDVaBYFj6WnBiKReLzyOX+P9+/dnzp4/e/P1LMuGDBkyHss4LsfZBOQbTiXz3myQDBkyNmCQUEiiHA/WZC6yNhkyZMggn6/D5apfyZAhQ0YacHmyygPxNUmGDBkyeBCsLTEN4l/MxWXIkPFABq+6//3nr/Q3ZMiQ8SjGEY7rQyEJmv01fJhdhgwZoxk8wKWXJ3gjkx83b2aRIUPGUMb1ZKQodr3otPFJtuDDNzJkyNiA0W8MpJnmqibBhxOuDBkyxjH6r+scAdNyXrEAJ0OGjBGMNLT1j3T8isaCICtDhowRDJ4u1loCaahNE2YZMmTswOAF+lqzkyyoU7aTIUPGbAZPWTsNyFbhjLxThgwZ2zD4ZLXmZW2zgtsiMmTIGMqoJa61ixS8tp+m1jJkyJjNSJsBaauylsTGIVuGDBmbMcgEaTmMJ6i8qSBDhox9GJ2LXJ1ldfCn2ypDhozRDJ5A8on5Rqy6cCZDhozZjFUHQXKM44U8snT0vyFDhoxBjNoEaeOzdrUCBXEZMmRswEh/xmGrjpIL0lcZMmQ8kHGEo9aw7B8ZUf4tQ4aMoYxaIpqW59ImZb+1IEOGjHkMHmQ7qe+ykywpt8mQIWMoo9O85OG1f+xDd0ZkyJAhA4fdoAEJ3vwPt0VkyJAxmsGvcfBj6A1ShgwZGzB4M6DWMEh56fbJkCFjNoOnjqueSUtpy5qaMmTIeB7jBy7kvCqrDgzyAAAAAElFTkSuQmCC" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+</body>
+</html>

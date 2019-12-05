@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+
+    
+<!-- Tencent Speed -->
+<script>var _speedMark = new Date()</script>
+<!-- End Tencent Speed -->
+<!-- Tencent Analysis -->
+<script async src="//tajs.qq.com/stats?sId=66070201"></script>
+<!-- End Tencent Analysis -->
+
+
+    
+<!-- Baidu Tongji -->
+<script>var _hmt = _hmt || []</script>
+<script async src="//hm.baidu.com/hm.js?e70991547eea438f6d8fd4449418c1bb"></script>
+<!-- End Baidu Tongji -->
+
+
+
+<!-- Baidu Push -->
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<!-- End Baidu Push -->
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>Linux修改主机名称、DNS解析 | Jason Rao&#39;s Blog | 态度决定一切 细节决定成败</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="Linux">
+    <meta name="description" content="Linux修改主机名称、DNS解析步骤  inux更改主机名称：12345678vi /etc/sysconfig/network打开配置文件设置HOSTNAME=hadoop(自己想更改的名称)退出保存即可测试：重启机器 设置DNS域名解析：12345678vi /etc/hosts打开配置文件在最后加入：ip地址 域名称（192.168.110.101 hadoop）保存退出即可测试：ping">
+<meta name="keywords" content="Linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux修改主机名称、DNS解析">
+<meta property="og:url" content="https://raoyangsheng.com/2015/10/it-linux-02.html">
+<meta property="og:site_name" content="Jason Rao&#39;s Blog">
+<meta property="og:description" content="Linux修改主机名称、DNS解析步骤  inux更改主机名称：12345678vi /etc/sysconfig/network打开配置文件设置HOSTNAME=hadoop(自己想更改的名称)退出保存即可测试：重启机器 设置DNS域名解析：12345678vi /etc/hosts打开配置文件在最后加入：ip地址 域名称（192.168.110.101 hadoop）保存退出即可测试：ping">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-12-05T06:12:56.153Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux修改主机名称、DNS解析">
+<meta name="twitter:description" content="Linux修改主机名称、DNS解析步骤  inux更改主机名称：12345678vi /etc/sysconfig/network打开配置文件设置HOSTNAME=hadoop(自己想更改的名称)退出保存即可测试：重启机器 设置DNS域名解析：12345678vi /etc/hosts打开配置文件在最后加入：ip地址 域名称（192.168.110.101 hadoop）保存退出即可测试：ping">
+    
+        <link rel="alternate" type="application/atom+xml" title="Jason Rao&#39;s Blog" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu"  >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar1.png">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">Jason Rao</h5>
+          <a href="mailto:76198830@qq.com" title="76198830@qq.com" class="mail">76198830@qq.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                归档
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                标签
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                分类
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Linux修改主机名称、DNS解析</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Linux修改主机名称、DNS解析</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2015-10-01T11:22:32.000Z" itemprop="datePublished" class="page-time">
+  2015年10月01日
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/Linux/">Linux</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#inux更改主机名称："><span class="post-toc-number">1.</span> <span class="post-toc-text">inux更改主机名称：</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#设置DNS域名解析："><span class="post-toc-number">2.</span> <span class="post-toc-text">设置DNS域名解析：</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#设置ip地址："><span class="post-toc-number">3.</span> <span class="post-toc-text">设置ip地址：</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-it-linux-02"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Linux修改主机名称、DNS解析</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2015年10月01日 19:22:32" datetime="2015-10-01T11:22:32.000Z"  itemprop="datePublished">2015年10月01日</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/Linux/">Linux</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p><strong>Linux修改主机名称、DNS解析步骤</strong> </p>
+<h4 id="inux更改主机名称："><a href="#inux更改主机名称：" class="headerlink" title="inux更改主机名称："></a>inux更改主机名称：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">vi /etc/sysconfig/network打开配置文件</span><br><span class="line"></span><br><span class="line">设置HOSTNAME=hadoop(自己想更改的名称)</span><br><span class="line"></span><br><span class="line">退出保存即可</span><br><span class="line"></span><br><span class="line">测试：重启机器</span><br></pre></td></tr></table></figure>
+<h4 id="设置DNS域名解析："><a href="#设置DNS域名解析：" class="headerlink" title="设置DNS域名解析："></a>设置DNS域名解析：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">vi /etc/hosts打开配置文件</span><br><span class="line"></span><br><span class="line">在最后加入：ip地址 域名称（192.168.110.101 hadoop）</span><br><span class="line"></span><br><span class="line">保存退出即可</span><br><span class="line"></span><br><span class="line">测试：ping hadoop</span><br></pre></td></tr></table></figure>
+<h4 id="设置ip地址："><a href="#设置ip地址：" class="headerlink" title="设置ip地址："></a>设置ip地址：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">查看ip地址：ifconfig</span><br><span class="line"></span><br><span class="line">修改ip地址：vi /etc/sysconfig/network-scripts/ifcfg-eth0 打开配置文件</span><br><span class="line"></span><br><span class="line">设置ip地址，网关、域名等</span><br><span class="line"></span><br><span class="line">保存退出，执行命令：service network restart</span><br></pre></td></tr></table></figure>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2019-12-05T06:12:56.153Z" itemprop="dateUpdated">2019年12月05日 14:12:56</time>
+</span><br>
+
+
+        
+    </div>
+    
+    <footer>
+        <a href="https://raoyangsheng.com">
+            <img src="/img/avatar1.png" alt="Jason Rao">
+            Jason Rao
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://raoyangsheng.com/2015/10/it-linux-02.html&title=《Linux修改主机名称、DNS解析》 — Jason Rao's Blog&pic=https://raoyangsheng.com/img/avatar1.png" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://raoyangsheng.com/2015/10/it-linux-02.html&title=《Linux修改主机名称、DNS解析》 — Jason Rao's Blog&source=饶扬胜,饶扬胜博客,架构师博客,全栈技术,分布式架构,Jason Rao,raoyangsheng" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://raoyangsheng.com/2015/10/it-linux-02.html" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Linux修改主机名称、DNS解析》 — Jason Rao's Blog&url=https://raoyangsheng.com/2015/10/it-linux-02.html&via=https://raoyangsheng.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://raoyangsheng.com/2015/10/it-linux-02.html" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2015/10/it-linux-03.html" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Linux下如何释放cache内存(drop_caches)</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2015/10/it-linux-01.html" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Linux下关闭防火墙</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Valine Comments -->
+    <div class="comments vcomment" id="comments"></div>
+    <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+    <script src="//unpkg.com/valine@latest/dist/Valine.min.js"></script>
+    <!-- Valine Comments script -->
+    <script>
+        var GUEST_INFO = ['nick','mail','link'];
+        var guest_info = 'nick,mail,link'.split(',').filter(function(item){
+          return GUEST_INFO.indexOf(item) > -1
+        });
+        new Valine({
+            el: '#comments',
+            notify: 'false' == 'true',
+            verify: 'false' == 'true',
+            appId: "V4nHXQbS7PkL3LklG3NCKoRB-gzGzoHsz",
+            appKey: "9UUGXtqUteOGsDhhYR12P9as",
+            avatar: "mm",
+            placeholder: "……在这里说点什么吧",
+            guest_info: guest_info.length == 0 ? GUEST_INFO : guest_info,
+            pageSize: "10"
+        })
+    </script>
+    <!-- Valine Comments end -->
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏~
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/weixinpay.png" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/weixinpay.png" data-alipay="/img/alipay.png">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <!-- 
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>博客内容遵循 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+        </p>
+    </div>
+    -->
+    <div class="bottom">
+        <p><span>Jason Rao &copy; 2010 - 2019</span>
+            <span>
+                    <!-- <a href="http://www.beian.miit.gov.cn/" target="_blank">粤ICP备17034104号-1</a><br> -->
+
+                
+                <a href="http://www.beian.miit.gov.cn/" target="_blank">粤ICP备19120775号</a><br>
+                  
+                
+            </span>
+        </p>
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+    </div>
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+    </script>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://raoyangsheng.com/2015/10/it-linux-02.html&title=《Linux修改主机名称、DNS解析》 — Jason Rao's Blog&pic=https://raoyangsheng.com/img/avatar1.png" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://raoyangsheng.com/2015/10/it-linux-02.html&title=《Linux修改主机名称、DNS解析》 — Jason Rao's Blog&source=饶扬胜,饶扬胜博客,架构师博客,全栈技术,分布式架构,Jason Rao,raoyangsheng" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://raoyangsheng.com/2015/10/it-linux-02.html" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Linux修改主机名称、DNS解析》 — Jason Rao's Blog&url=https://raoyangsheng.com/2015/10/it-linux-02.html&via=https://raoyangsheng.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://raoyangsheng.com/2015/10/it-linux-02.html" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMYAAADGCAAAAACs8KCBAAACJUlEQVR42u3aYW7DIAwG0N7/0t0BsjB/hkwKvPya0qbhMckytj+f8vW9XONPx9+/PnV3Z/GFgYHxWkbl9Snj+un4m/X7t1QMDIwDGHcRrLKUNLBWwm59bRgYGBg90hhQXzoGBgbGfMAd/0I97au8FwMDA6MSOtPXzKeDj5zFMTAwXsioV93//+9H+hsYGBivYnzDa1UqOU7y4lVhYGBszagHuHpaljYyewEXAwPjHEav3J+W2NYW4H65g4GBcQCjlw4uiPSFUF5aAwYGxgGMXsNyVeFsPk3EwMDYm1EaYphuK64N4vH/BwMD4+WMdLRiJnRWDrf17iQGBsY5jHq7sRc051PAoP2JgYGxKaM+6JAOQ6RJZHpYvW1hYmBgbMoYv3imulXfoHT47LaFiYGBsSkjTeDqYxartiOYGcHAwNiOsaoxkG5Kun3xhmJgYGzKSBuQTzxbb0hgYGCcxugV99NyW2Uv00MsBgbGaYy0uJ8W3XotgeApDAyMIxlpopb+2qrAjYGBcQ6jXmPvHUfTdkIlWcTAwDiT0RvPSgc10tZmKUnFwMDYlPENr7TcPxNkg/QUAwNja8Z8sEvbk5WlVFLDXsjGwMB4L6NXbhs3JnttgF6KiYGBcQ6jF/jmg3X6m8HMCAYGxsGM8WG1EqZnjsF/nMgxMDAwwtQtLa710lAMDIxzGDPNgDo4DcFBOMbAwNiakQ5VzDcaKwnlI01NDAyM9zF+ALtbk2Hf7oApAAAAAElFTkSuQmCC" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+</body>
+</html>

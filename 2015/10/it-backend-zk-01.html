@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+
+    
+<!-- Tencent Speed -->
+<script>var _speedMark = new Date()</script>
+<!-- End Tencent Speed -->
+<!-- Tencent Analysis -->
+<script async src="//tajs.qq.com/stats?sId=66070201"></script>
+<!-- End Tencent Analysis -->
+
+
+    
+<!-- Baidu Tongji -->
+<script>var _hmt = _hmt || []</script>
+<script async src="//hm.baidu.com/hm.js?e70991547eea438f6d8fd4449418c1bb"></script>
+<!-- End Baidu Tongji -->
+
+
+
+<!-- Baidu Push -->
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<!-- End Baidu Push -->
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>Zookeeper 集群搭建 | Jason Rao&#39;s Blog | 态度决定一切 细节决定成败</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="Zookeeper,集群">
+    <meta name="description" content="如近分布式架构常用到Zookeeper组建，下面来介绍下Zookeeper集群的搭建方法  第一步：下载并上传zookeeper-3.4.6.tar.gz到各个服务器的/usr/local/目录,或者使用wget命令123cd /usr/local/wget http://apache.fayea.com/zookeeper/zookeeper-3.4.6/zookeeper-3.4.6.tar">
+<meta name="keywords" content="Zookeeper,集群">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Zookeeper 集群搭建">
+<meta property="og:url" content="https://raoyangsheng.com/2015/10/it-backend-zk-01.html">
+<meta property="og:site_name" content="Jason Rao&#39;s Blog">
+<meta property="og:description" content="如近分布式架构常用到Zookeeper组建，下面来介绍下Zookeeper集群的搭建方法  第一步：下载并上传zookeeper-3.4.6.tar.gz到各个服务器的/usr/local/目录,或者使用wget命令123cd /usr/local/wget http://apache.fayea.com/zookeeper/zookeeper-3.4.6/zookeeper-3.4.6.tar">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-12-05T06:12:56.150Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Zookeeper 集群搭建">
+<meta name="twitter:description" content="如近分布式架构常用到Zookeeper组建，下面来介绍下Zookeeper集群的搭建方法  第一步：下载并上传zookeeper-3.4.6.tar.gz到各个服务器的/usr/local/目录,或者使用wget命令123cd /usr/local/wget http://apache.fayea.com/zookeeper/zookeeper-3.4.6/zookeeper-3.4.6.tar">
+    
+        <link rel="alternate" type="application/atom+xml" title="Jason Rao&#39;s Blog" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu"  >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar1.png">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">Jason Rao</h5>
+          <a href="mailto:76198830@qq.com" title="76198830@qq.com" class="mail">76198830@qq.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                归档
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                标签
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                分类
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Zookeeper 集群搭建</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Zookeeper 集群搭建</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2015-10-02T09:59:11.000Z" itemprop="datePublished" class="page-time">
+  2015年10月02日
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/后端/">后端</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#第一步：下载并上传zookeeper-3-4-6-tar-gz到各个服务器的-usr-local-目录-或者使用wget命令"><span class="post-toc-number">1.</span> <span class="post-toc-text">第一步：下载并上传zookeeper-3.4.6.tar.gz到各个服务器的/usr/local/目录,或者使用wget命令</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#第二步：在各个服务器上解压zookeeper安装包，并按节点号对zookeeper目录重命名"><span class="post-toc-number">2.</span> <span class="post-toc-text">第二步：在各个服务器上解压zookeeper安装包，并按节点号对zookeeper目录重命名</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#第三步：在各zookeeper节点目录下创建以下目录"><span class="post-toc-number">3.</span> <span class="post-toc-text">第三步：在各zookeeper节点目录下创建以下目录</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#第四步：将各节点zookeeper-zookeeper-3-4-6-x-conf目录下的zoo-sample-cfg文件拷贝一份，命名为zoo-cfg"><span class="post-toc-number">4.</span> <span class="post-toc-text">第四步：将各节点zookeeper/zookeeper-3.4.6_x/conf目录下的zoo_sample.cfg文件拷贝一份，命名为zoo.cfg</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#第五步：修改-zoo-cfg-配置文件"><span class="post-toc-number">5.</span> <span class="post-toc-text">第五步：修改 zoo.cfg 配置文件</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#第六步：在dataDir-usr-local-zookeeper-3-4-6-x-data下创建-myid-文件"><span class="post-toc-number">6.</span> <span class="post-toc-text">第六步：在dataDir=/usr/local/zookeeper-3.4.6_x/data下创建 myid 文件</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#第七步：启动并查看zookeeper"><span class="post-toc-number">7.</span> <span class="post-toc-text">第七步：启动并查看zookeeper</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#第八步：验证zookeeper启动情况"><span class="post-toc-number">8.</span> <span class="post-toc-text">第八步：验证zookeeper启动情况</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#第九步：如果启动成功，三台机器结果类似如下-标红部分为一个leader-两个follower"><span class="post-toc-number">9.</span> <span class="post-toc-text">第九步：如果启动成功，三台机器结果类似如下,标红部分为一个leader,两个follower</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-it-backend-zk-01"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Zookeeper 集群搭建</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2015年10月02日 17:59:11" datetime="2015-10-02T09:59:11.000Z"  itemprop="datePublished">2015年10月02日</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/后端/">后端</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p><strong>如近分布式架构常用到Zookeeper组建，下面来介绍下Zookeeper集群的搭建方法</strong> </p>
+<h4 id="第一步：下载并上传zookeeper-3-4-6-tar-gz到各个服务器的-usr-local-目录-或者使用wget命令"><a href="#第一步：下载并上传zookeeper-3-4-6-tar-gz到各个服务器的-usr-local-目录-或者使用wget命令" class="headerlink" title="第一步：下载并上传zookeeper-3.4.6.tar.gz到各个服务器的/usr/local/目录,或者使用wget命令"></a>第一步：下载并上传zookeeper-3.4.6.tar.gz到各个服务器的/usr/local/目录,或者使用wget命令</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local/</span><br><span class="line">wget http://apache.fayea.com/zookeeper/zookeeper-3.4.6/zookeeper-3.4.6.tar.gz</span><br><span class="line">tar -zxvf zookeeper-3.4.6.tar.gz</span><br></pre></td></tr></table></figure>
+<h4 id="第二步：在各个服务器上解压zookeeper安装包，并按节点号对zookeeper目录重命名"><a href="#第二步：在各个服务器上解压zookeeper安装包，并按节点号对zookeeper目录重命名" class="headerlink" title="第二步：在各个服务器上解压zookeeper安装包，并按节点号对zookeeper目录重命名"></a>第二步：在各个服务器上解压zookeeper安装包，并按节点号对zookeeper目录重命名</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 服务器1</span><br><span class="line">cp -r zookeeper-3.4.6 zookeeper-3.4.6_1</span><br><span class="line"># 服务器2</span><br><span class="line">cp -r zookeeper-3.4.6 zookeeper-3.4.6_2</span><br><span class="line"># 服务器3</span><br><span class="line">cp -r zookeeper-3.4.6 zookeeper-3.4.6_3</span><br></pre></td></tr></table></figure>
+<h4 id="第三步：在各zookeeper节点目录下创建以下目录"><a href="#第三步：在各zookeeper节点目录下创建以下目录" class="headerlink" title="第三步：在各zookeeper节点目录下创建以下目录"></a>第三步：在各zookeeper节点目录下创建以下目录</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local/zookeeper-3.4.6_1</span><br><span class="line">mkdir data</span><br><span class="line">mkdir logs</span><br><span class="line">cd /usr/local/zookeeper-3.4.6_2</span><br><span class="line">mkdir data</span><br><span class="line">mkdir logs</span><br><span class="line">cd /usr/local/zookeeper-3.4.6_3</span><br><span class="line">mkdir data</span><br><span class="line">mkdir logs</span><br></pre></td></tr></table></figure>
+<h4 id="第四步：将各节点zookeeper-zookeeper-3-4-6-x-conf目录下的zoo-sample-cfg文件拷贝一份，命名为zoo-cfg"><a href="#第四步：将各节点zookeeper-zookeeper-3-4-6-x-conf目录下的zoo-sample-cfg文件拷贝一份，命名为zoo-cfg" class="headerlink" title="第四步：将各节点zookeeper/zookeeper-3.4.6_x/conf目录下的zoo_sample.cfg文件拷贝一份，命名为zoo.cfg"></a>第四步：将各节点zookeeper/zookeeper-3.4.6_x/conf目录下的zoo_sample.cfg文件拷贝一份，命名为zoo.cfg</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local/zookeeper-3.4.6_1/conf</span><br><span class="line">cp zoo_sample.cfg zoo.cfg</span><br><span class="line">cd /usr/local/zookeeper-3.4.6_2/conf</span><br><span class="line">cp zoo_sample.cfg zoo.cfg</span><br><span class="line">cd /usr/local/zookeeper-3.4.6_3/conf</span><br><span class="line">cp zoo_sample.cfg zoo.cfg</span><br></pre></td></tr></table></figure>
+<h4 id="第五步：修改-zoo-cfg-配置文件"><a href="#第五步：修改-zoo-cfg-配置文件" class="headerlink" title="第五步：修改 zoo.cfg 配置文件"></a>第五步：修改 zoo.cfg 配置文件</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local/zookeeper-3.4.6_1/conf</span><br><span class="line"># 设置内容如下：</span><br><span class="line">tickTime=2000</span><br><span class="line">initLimit=10</span><br><span class="line">syncLimit=5</span><br><span class="line">dataDir=/usr/local/zookeeper-3.4.6_1/data</span><br><span class="line">dataLogDir=/usr/local/zookeeper-3.4.6_1/logs</span><br><span class="line">clientPort=2181</span><br><span class="line">server.1=127.0.0.1:2881:3881</span><br><span class="line">server.2=127.0.0.1:2882:3882</span><br><span class="line">server.3=127.0.0.1:2883:3883</span><br><span class="line"># -----------------------------------</span><br><span class="line">cd /usr/local/zookeeper-3.4.6_2/conf</span><br><span class="line">vi zoo.cfg</span><br><span class="line"># 设置内容如下：</span><br><span class="line">tickTime=2000</span><br><span class="line">initLimit=10</span><br><span class="line">syncLimit=5</span><br><span class="line">dataDir=/usr/local/zookeeper-3.4.6_2/data</span><br><span class="line">dataLogDir=/usr/local/zookeeper-3.4.6_2/logs</span><br><span class="line">clientPort=2182</span><br><span class="line">server.1=127.0.0.1:2881:3881</span><br><span class="line">server.2=127.0.0.1:2882:3882</span><br><span class="line">server.3=127.0.0.1:2883:3883</span><br><span class="line"># -----------------------------------</span><br><span class="line">cd /usr/local/zookeeper-3.4.6_3/conf</span><br><span class="line">vi zoo.cfg</span><br><span class="line"># 设置内容如下：</span><br><span class="line">tickTime=2000</span><br><span class="line">initLimit=10</span><br><span class="line">syncLimit=5</span><br><span class="line">dataDir=/usr/local/zookeeper-3.4.6_3/data</span><br><span class="line">dataLogDir=/usr/local/zookeeper-3.4.6_3/logs</span><br><span class="line">clientPort=2183</span><br><span class="line">server.1=127.0.0.1:2881:3881</span><br><span class="line">server.2=127.0.0.1:2882:3882</span><br><span class="line">server.3=127.0.0.1:2883:3883</span><br></pre></td></tr></table></figure>
+<h4 id="第六步：在dataDir-usr-local-zookeeper-3-4-6-x-data下创建-myid-文件"><a href="#第六步：在dataDir-usr-local-zookeeper-3-4-6-x-data下创建-myid-文件" class="headerlink" title="第六步：在dataDir=/usr/local/zookeeper-3.4.6_x/data下创建 myid 文件"></a>第六步：在dataDir=/usr/local/zookeeper-3.4.6_x/data下创建 myid 文件</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vi /usr/local/zookeeper-3.4.6_1/data/myid #设置值为1</span><br><span class="line">vi /usr/local/zookeeper-3.4.6_2/data/myid #设置值为2</span><br><span class="line">vi /usr/local/zookeeper-3.4.6_3/data/myid #设置值为3</span><br></pre></td></tr></table></figure>
+<h4 id="第七步：启动并查看zookeeper"><a href="#第七步：启动并查看zookeeper" class="headerlink" title="第七步：启动并查看zookeeper"></a>第七步：启动并查看zookeeper</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local</span><br><span class="line">/usr/local/zookeeper-3.4.6_1/bin/zkServer.sh start</span><br><span class="line">/usr/local/zookeeper-3.4.6_2/bin/zkServer.sh start</span><br><span class="line">/usr/local/zookeeper-3.4.6_3/bin/zkServer.sh start</span><br></pre></td></tr></table></figure>
+<h4 id="第八步：验证zookeeper启动情况"><a href="#第八步：验证zookeeper启动情况" class="headerlink" title="第八步：验证zookeeper启动情况"></a>第八步：验证zookeeper启动情况</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/zookeeper-3.4.6_1/bin/zkServer.sh status</span><br><span class="line">/usr/local/zookeeper-3.4.6_2/bin/zkServer.sh status</span><br><span class="line">/usr/local/zookeeper-3.4.6_3/bin/zkServer.sh status</span><br></pre></td></tr></table></figure>
+<h4 id="第九步：如果启动成功，三台机器结果类似如下-标红部分为一个leader-两个follower"><a href="#第九步：如果启动成功，三台机器结果类似如下-标红部分为一个leader-两个follower" class="headerlink" title="第九步：如果启动成功，三台机器结果类似如下,标红部分为一个leader,两个follower"></a>第九步：如果启动成功，三台机器结果类似如下,标红部分为一个leader,两个follower</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@centos7 local]# /usr/local/zookeeper-3.4.6_1/bin/zkServer.sh status</span><br><span class="line">JMX enabled by default</span><br><span class="line">Using config: /usr/local/zookeeper-3.4.6_1/bin/../conf/zoo.cfg</span><br><span class="line">Mode: &quot;follower&quot;</span><br><span class="line">[root@centos7 local]# /usr/local/zookeeper-3.4.6_2/bin/zkServer.sh status</span><br><span class="line">JMX enabled by default</span><br><span class="line">Using config: /usr/local/zookeeper-3.4.6_2/bin/../conf/zoo.cfg</span><br><span class="line">Mode: &quot;leader&quot;</span><br><span class="line">[root@centos7 local]# /usr/local/zookeeper-3.4.6_3/bin/zkServer.sh status</span><br><span class="line">JMX enabled by default</span><br><span class="line">Using config: /usr/local/zookeeper-3.4.6_3/bin/../conf/zoo.cfg</span><br><span class="line">Mode: &quot;follower&quot;</span><br></pre></td></tr></table></figure>
+<p>此时zookeeper集群搭建成功。</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2019-12-05T06:12:56.150Z" itemprop="dateUpdated">2019年12月05日 14:12:56</time>
+</span><br>
+
+
+        
+    </div>
+    
+    <footer>
+        <a href="https://raoyangsheng.com">
+            <img src="/img/avatar1.png" alt="Jason Rao">
+            Jason Rao
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Zookeeper/">Zookeeper</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/集群/">集群</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://raoyangsheng.com/2015/10/it-backend-zk-01.html&title=《Zookeeper 集群搭建》 — Jason Rao's Blog&pic=https://raoyangsheng.com/img/avatar1.png" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://raoyangsheng.com/2015/10/it-backend-zk-01.html&title=《Zookeeper 集群搭建》 — Jason Rao's Blog&source=饶扬胜,饶扬胜博客,架构师博客,全栈技术,分布式架构,Jason Rao,raoyangsheng" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://raoyangsheng.com/2015/10/it-backend-zk-01.html" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Zookeeper 集群搭建》 — Jason Rao's Blog&url=https://raoyangsheng.com/2015/10/it-backend-zk-01.html&via=https://raoyangsheng.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://raoyangsheng.com/2015/10/it-backend-zk-01.html" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2015/10/it-java-tool-01.html" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">jvisualvm监控远程SpringBoot应用</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2015/10/it-linux-03.html" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Linux下如何释放cache内存(drop_caches)</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Valine Comments -->
+    <div class="comments vcomment" id="comments"></div>
+    <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+    <script src="//unpkg.com/valine@latest/dist/Valine.min.js"></script>
+    <!-- Valine Comments script -->
+    <script>
+        var GUEST_INFO = ['nick','mail','link'];
+        var guest_info = 'nick,mail,link'.split(',').filter(function(item){
+          return GUEST_INFO.indexOf(item) > -1
+        });
+        new Valine({
+            el: '#comments',
+            notify: 'false' == 'true',
+            verify: 'false' == 'true',
+            appId: "V4nHXQbS7PkL3LklG3NCKoRB-gzGzoHsz",
+            appKey: "9UUGXtqUteOGsDhhYR12P9as",
+            avatar: "mm",
+            placeholder: "……在这里说点什么吧",
+            guest_info: guest_info.length == 0 ? GUEST_INFO : guest_info,
+            pageSize: "10"
+        })
+    </script>
+    <!-- Valine Comments end -->
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏~
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/weixinpay.png" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/weixinpay.png" data-alipay="/img/alipay.png">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <!-- 
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>博客内容遵循 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+        </p>
+    </div>
+    -->
+    <div class="bottom">
+        <p><span>Jason Rao &copy; 2010 - 2019</span>
+            <span>
+                    <!-- <a href="http://www.beian.miit.gov.cn/" target="_blank">粤ICP备17034104号-1</a><br> -->
+
+                
+                <a href="http://www.beian.miit.gov.cn/" target="_blank">粤ICP备19120775号</a><br>
+                  
+                
+            </span>
+        </p>
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+    </div>
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+    </script>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://raoyangsheng.com/2015/10/it-backend-zk-01.html&title=《Zookeeper 集群搭建》 — Jason Rao's Blog&pic=https://raoyangsheng.com/img/avatar1.png" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://raoyangsheng.com/2015/10/it-backend-zk-01.html&title=《Zookeeper 集群搭建》 — Jason Rao's Blog&source=饶扬胜,饶扬胜博客,架构师博客,全栈技术,分布式架构,Jason Rao,raoyangsheng" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://raoyangsheng.com/2015/10/it-backend-zk-01.html" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Zookeeper 集群搭建》 — Jason Rao's Blog&url=https://raoyangsheng.com/2015/10/it-backend-zk-01.html&via=https://raoyangsheng.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://raoyangsheng.com/2015/10/it-backend-zk-01.html" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMYAAADGCAAAAACs8KCBAAACL0lEQVR42u3aQY6DMAwF0Ln/pTvbViPSbxtGIrysEKIJj4Ub2/n5icfrbbzfObr++3w+5/pXo4GBgXFbxms5kiXz181H/m4YGBjPYRwtn4fXo9nW1DyUf3lnDAwMjF4QXM6WhG8MDAyMHmMSjqtJLAYGBkY1ic23bnlCW71/Qi6OgYFxQ0a+/P9fX9LfwMDAuBWjV6xPNnnr+edtg4/ZMDAwtmbkAa7a2syjYpSgJh8OAwNjU8Y6CObBdFJoy9c6vIOBgfEARrJAdTPXK7HlJb+POxgYGI9kVFPT3oGwahu18GMMDIyNGFVS71DXZPtYhmFgYGzK6JXPzuqa5kH/S/jGwMDYlFFOF+OAmKes+WyHnwADA2NrRi+k5iWz3pGL/B0wMDAwqunopJB3QgjGwMDYlJEvP2lP9kL5CYctMDAwtmBcUa1K2gCTQx5fwi4GBsamjCqmt3CvSbB+EgMD45mM9UN5QW295OQTRO1MDAyMTRnzYJonpXkYXX+awnQYGBg3Z5yVrOZhOm95XlI7xMDA2I4xOeBV2MbFW9JmwMXAwNiCkbQEkjLcqFjW2jhiYGDszXgVR3Wrlx+5SML04TwYGBhbM64uhM0PcCSbTgwMjCcw8iDbC5dJMa7XpMTAwHgaY/1Qcj0p1fUOhGFgYGD0dpf5bNXkNsrIMTAwMOKyVzXp7SW6p/1vYGBg3ITRawYkr1KdOQ/rGBgYz2HkqeMksE5Kaac1NTEwMO7H+AXBQmqY/Tl9mgAAAABJRU5ErkJggg==" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+</body>
+</html>

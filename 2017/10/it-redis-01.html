@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+
+    
+<!-- Tencent Speed -->
+<script>var _speedMark = new Date()</script>
+<!-- End Tencent Speed -->
+<!-- Tencent Analysis -->
+<script async src="//tajs.qq.com/stats?sId=66070201"></script>
+<!-- End Tencent Analysis -->
+
+
+    
+<!-- Baidu Tongji -->
+<script>var _hmt = _hmt || []</script>
+<script async src="//hm.baidu.com/hm.js?e70991547eea438f6d8fd4449418c1bb"></script>
+<!-- End Baidu Tongji -->
+
+
+
+<!-- Baidu Push -->
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<!-- End Baidu Push -->
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>Redis工具类对各种数据类型的操作 | Jason Rao&#39;s Blog | 态度决定一切 细节决定成败</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="Redis">
+    <meta name="description" content="Redis工具类对string，list，hash，set，zset数据类型的操作。  添加依赖1234&amp;lt;dependency&amp;gt;    &amp;lt;groupId&amp;gt;org.springframework.boot&amp;lt;/groupId&amp;gt;    &amp;lt;artifactId&amp;gt;spring-boot-starter-data-redis&amp;lt;/artifactId&amp;gt;">
+<meta name="keywords" content="Redis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis工具类对各种数据类型的操作">
+<meta property="og:url" content="https://raoyangsheng.com/2017/10/it-redis-01.html">
+<meta property="og:site_name" content="Jason Rao&#39;s Blog">
+<meta property="og:description" content="Redis工具类对string，list，hash，set，zset数据类型的操作。  添加依赖1234&amp;lt;dependency&amp;gt;    &amp;lt;groupId&amp;gt;org.springframework.boot&amp;lt;/groupId&amp;gt;    &amp;lt;artifactId&amp;gt;spring-boot-starter-data-redis&amp;lt;/artifactId&amp;gt;">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-12-05T06:12:56.156Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Redis工具类对各种数据类型的操作">
+<meta name="twitter:description" content="Redis工具类对string，list，hash，set，zset数据类型的操作。  添加依赖1234&amp;lt;dependency&amp;gt;    &amp;lt;groupId&amp;gt;org.springframework.boot&amp;lt;/groupId&amp;gt;    &amp;lt;artifactId&amp;gt;spring-boot-starter-data-redis&amp;lt;/artifactId&amp;gt;">
+    
+        <link rel="alternate" type="application/atom+xml" title="Jason Rao&#39;s Blog" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu"  >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar1.png">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">Jason Rao</h5>
+          <a href="mailto:76198830@qq.com" title="76198830@qq.com" class="mail">76198830@qq.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                归档
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                标签
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                分类
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Redis工具类对各种数据类型的操作</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Redis工具类对各种数据类型的操作</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2017-10-13T13:04:22.000Z" itemprop="datePublished" class="page-time">
+  2017年10月13日
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/后端/">后端</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#添加依赖"><span class="post-toc-number">1.</span> <span class="post-toc-text">添加依赖</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#Redis代码配置"><span class="post-toc-number">2.</span> <span class="post-toc-text">Redis代码配置</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#Redis操作代码"><span class="post-toc-number">3.</span> <span class="post-toc-text">Redis操作代码</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-it-redis-01"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Redis工具类对各种数据类型的操作</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2017年10月13日 21:04:22" datetime="2017-10-13T13:04:22.000Z"  itemprop="datePublished">2017年10月13日</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/后端/">后端</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p><strong>Redis工具类对string，list，hash，set，zset数据类型的操作。</strong> </p>
+<h4 id="添加依赖"><a href="#添加依赖" class="headerlink" title="添加依赖"></a>添加依赖</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spring-boot-starter-data-redis&lt;/artifactId&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+<h4 id="Redis代码配置"><a href="#Redis代码配置" class="headerlink" title="Redis代码配置"></a>Redis代码配置</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line">import org.springframework.beans.factory.annotation.Autowired;</span><br><span class="line">import org.springframework.cache.annotation.EnableCaching;</span><br><span class="line">import org.springframework.context.annotation.Bean;</span><br><span class="line">import org.springframework.context.annotation.Configuration;</span><br><span class="line">import org.springframework.data.redis.connection.RedisConnectionFactory;</span><br><span class="line">import org.springframework.data.redis.core.*;</span><br><span class="line">  </span><br><span class="line">/**</span><br><span class="line"> * </span><br><span class="line"> * Redis模板配置，缓存配置</span><br><span class="line"> */</span><br><span class="line">  </span><br><span class="line">@Configuration</span><br><span class="line">@EnableCaching</span><br><span class="line">public class RedisConfig &#123;</span><br><span class="line">  </span><br><span class="line">    @Autowired</span><br><span class="line">    RedisConnectionFactory redisConnectionFactory;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 实例化 RedisTemplate 对象</span><br><span class="line">     */</span><br><span class="line">    @Bean</span><br><span class="line">    public RedisTemplate&lt;String, Object&gt; functionDomainRedisTemplate() &#123;</span><br><span class="line">        RedisTemplate&lt;String, Object&gt; redisTemplate = new RedisTemplate&lt;String, Object&gt;();</span><br><span class="line">        initDomainRedisTemplate(redisTemplate, redisConnectionFactory);</span><br><span class="line">        return redisTemplate;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 设置数据存入 redis 的序列化方式</span><br><span class="line">     */</span><br><span class="line">    private void initDomainRedisTemplate(RedisTemplate&lt;String, Object&gt; redisTemplate, RedisConnectionFactory factory) &#123;</span><br><span class="line">        /***</span><br><span class="line">        redisTemplate.setKeySerializer(new StringRedisSerializer());</span><br><span class="line">        redisTemplate.setValueSerializer(new JdkSerializationRedisSerializer());</span><br><span class="line">        redisTemplate.setHashKeySerializer(new StringRedisSerializer());</span><br><span class="line">        redisTemplate.setHashValueSerializer(new Jackson2JsonRedisSerializer(Object.class));</span><br><span class="line">        */</span><br><span class="line">        redisTemplate.setConnectionFactory(factory);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 实例化 HashOperations 对象,可以使用 Hash 类型操作</span><br><span class="line">     */</span><br><span class="line">    @Bean</span><br><span class="line">    public HashOperations&lt;String, String, Object&gt; hashOperations(RedisTemplate&lt;String, Object&gt; redisTemplate) &#123;</span><br><span class="line">        return redisTemplate.opsForHash();</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 实例化 ValueOperations 对象,可以使用 String 操作</span><br><span class="line">     */</span><br><span class="line">    @Bean</span><br><span class="line">    public ValueOperations&lt;String, Object&gt; valueOperations(RedisTemplate&lt;String, Object&gt; redisTemplate) &#123;</span><br><span class="line">        return redisTemplate.opsForValue();</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 实例化 ListOperations 对象,可以使用 List 操作</span><br><span class="line">     */</span><br><span class="line">    @Bean</span><br><span class="line">    public ListOperations&lt;String, Object&gt; listOperations(RedisTemplate&lt;String, Object&gt; redisTemplate) &#123;</span><br><span class="line">        return redisTemplate.opsForList();</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 实例化 SetOperations 对象,可以使用 Set 操作</span><br><span class="line">     */</span><br><span class="line">    @Bean</span><br><span class="line">    public SetOperations&lt;String, Object&gt; setOperations(RedisTemplate&lt;String, Object&gt; redisTemplate) &#123;</span><br><span class="line">        return redisTemplate.opsForSet();</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 实例化 ZSetOperations 对象,可以使用 ZSet 操作</span><br><span class="line">     */</span><br><span class="line">    @Bean</span><br><span class="line">    public ZSetOperations&lt;String, Object&gt; zSetOperations(RedisTemplate&lt;String, Object&gt; redisTemplate) &#123;</span><br><span class="line">        return redisTemplate.opsForZSet();</span><br><span class="line">    &#125;</span><br><span class="line">     </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="Redis操作代码"><a href="#Redis操作代码" class="headerlink" title="Redis操作代码"></a>Redis操作代码</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br></pre></td><td class="code"><pre><span class="line">import org.springframework.beans.factory.annotation.Autowired;</span><br><span class="line">import org.springframework.data.redis.core.*;</span><br><span class="line">import org.springframework.stereotype.Service;</span><br><span class="line">  </span><br><span class="line">import javax.annotation.Resource;</span><br><span class="line">import java.util.List;</span><br><span class="line">import java.util.Map;</span><br><span class="line">import java.util.Set;</span><br><span class="line">import java.util.concurrent.TimeUnit;</span><br><span class="line">  </span><br><span class="line">@Service</span><br><span class="line">public class RedisService &#123;</span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">    @Autowired</span><br><span class="line">    private RedisTemplate&lt;String, Object&gt; redisTemplate;</span><br><span class="line">     // HashMap操作</span><br><span class="line">    @Resource</span><br><span class="line">    private HashOperations&lt;String, String, Object&gt; hashOperations;</span><br><span class="line">    // Object操作</span><br><span class="line">    @Resource</span><br><span class="line">    private ValueOperations&lt;String, Object&gt; valueOperations;</span><br><span class="line">     // List操作</span><br><span class="line">    @Resource</span><br><span class="line">    private ListOperations&lt;String, Object&gt; listOperations;</span><br><span class="line">  </span><br><span class="line">     // set操作</span><br><span class="line">    @Resource</span><br><span class="line">    private SetOperations&lt;String, Object&gt; setOperations;</span><br><span class="line">     // ZSet操作</span><br><span class="line">    @Resource</span><br><span class="line">    private ZSetOperations&lt;String, Object&gt; zSetOperations;</span><br><span class="line">  </span><br><span class="line">    //---------------------------------------------------------------------</span><br><span class="line">    // redisTemplate</span><br><span class="line">    //---------------------------------------------------------------------</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 判断key是否存在</span><br><span class="line">     * @param key</span><br><span class="line">     */</span><br><span class="line">    public boolean hasKey(String key) &#123;</span><br><span class="line">        return redisTemplate.hasKey(key);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 删除key</span><br><span class="line">     * @param key</span><br><span class="line">     */</span><br><span class="line">    public void delete(String key)&#123;</span><br><span class="line">        redisTemplate.delete(key);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 判断指定key的hashKey是否存在</span><br><span class="line">     * @param key</span><br><span class="line">     * @param hashKey</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    public boolean hasKey(String key, String hashKey) &#123;</span><br><span class="line">        return redisTemplate.opsForHash().hasKey(key, hashKey);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 设置超时时间</span><br><span class="line">     * @param key</span><br><span class="line">     * @param timeout</span><br><span class="line">     * @param unit</span><br><span class="line">     */</span><br><span class="line">    public void expire(String key, final long timeout, final TimeUnit unit) &#123;</span><br><span class="line">        redisTemplate.expire(key, timeout, unit);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 获取过期时间</span><br><span class="line">     * @param key</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    public long ttl(String key)&#123;</span><br><span class="line">        return redisTemplate.getExpire(key);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 获取指定pattern的key</span><br><span class="line">     * @param pattern</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    public Set&lt;String&gt; keys(String pattern) &#123;</span><br><span class="line">        return redisTemplate.keys(pattern);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 删除多个key</span><br><span class="line">     * @param keys</span><br><span class="line">     */</span><br><span class="line">    public void delete(Set&lt;String&gt; keys) &#123;</span><br><span class="line">        redisTemplate.delete(keys);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 设置过期时间</span><br><span class="line">     * @param key</span><br><span class="line">     * @param expire</span><br><span class="line">     */</span><br><span class="line">    private void setExpire (String key,long expire)&#123;</span><br><span class="line">        if (expire != -1) &#123;</span><br><span class="line">            redisTemplate.expire(key, expire, TimeUnit.SECONDS);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    //---------------------------------------------------------------------</span><br><span class="line">    // ValueOperations -&gt; Redis String/Value 操作</span><br><span class="line">    //---------------------------------------------------------------------</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 设置key-value值</span><br><span class="line">     */</span><br><span class="line">    public void addValue(String key, Object value,long expire)&#123;</span><br><span class="line">        valueOperations.set(key, value);</span><br><span class="line">  </span><br><span class="line">        setExpire(key,expire);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 设置key-value值,传入时间单位</span><br><span class="line">     */</span><br><span class="line">    public void addValue(String key, Object value,long expire, TimeUnit timeUnit)&#123;</span><br><span class="line">        valueOperations.set(key, value, expire, timeUnit);</span><br><span class="line">  </span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 设置key-value值, 无过期时间</span><br><span class="line">     */</span><br><span class="line">    public void addValue(String key, Object value)&#123;</span><br><span class="line">        valueOperations.set(key, value);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 获取key的值</span><br><span class="line">     *</span><br><span class="line">     */</span><br><span class="line">    public Object getValue(String key)&#123;</span><br><span class="line">        return valueOperations.get(key);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    //---------------------------------------------------------------------</span><br><span class="line">    // HashOperations -&gt; Redis Redis Hash 操作</span><br><span class="line">    //---------------------------------------------------------------------</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 向redis 中添加内容</span><br><span class="line">     * @param key       保存key</span><br><span class="line">     * @param hashKey   hashKey</span><br><span class="line">     * @param data      保存对象 data</span><br><span class="line">     * @param expire    过期时间    -1：表示不过期</span><br><span class="line">     */</span><br><span class="line">    public void addHashValue(String key,String hashKey, Object data, long expire) &#123;</span><br><span class="line">        hashOperations.put(key, hashKey, data);</span><br><span class="line">  </span><br><span class="line">        setExpire(key,expire);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * Hash 添加数据</span><br><span class="line">     * @param key   key</span><br><span class="line">     * @param map   data</span><br><span class="line">     */</span><br><span class="line">    public void addAllHashValue(String key, Map&lt;String, Object&gt; map, long expire) &#123;</span><br><span class="line">        hashOperations.putAll(key, map);</span><br><span class="line">  </span><br><span class="line">        setExpire(key,expire);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 删除hash key</span><br><span class="line">     * @param key       key</span><br><span class="line">     * @param hashKey   hashKey</span><br><span class="line">     */</span><br><span class="line">    public long deleteHashValue(String key, String hashKey) &#123;</span><br><span class="line">        return hashOperations.delete(key, hashKey);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 获取数据</span><br><span class="line">     */</span><br><span class="line">    public Object getHashValue(String key, String hashKey) &#123;</span><br><span class="line">        return hashOperations.get(key, hashKey);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 批量获取数据</span><br><span class="line">     */</span><br><span class="line">    public List&lt;Object&gt; getHashAllValue(String key) &#123;</span><br><span class="line">        return hashOperations.values(key);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 批量获取指定hashKey的数据</span><br><span class="line">     */</span><br><span class="line">    public List&lt;Object&gt; getHashMultiValue(String key, List&lt;String&gt; hashKeys) &#123;</span><br><span class="line">        return  hashOperations.multiGet(key, hashKeys);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 获取hash数量</span><br><span class="line">     */</span><br><span class="line">    public Long getHashCount(String key) &#123;</span><br><span class="line">        return hashOperations.size(key);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">    //---------------------------------------------------------------------</span><br><span class="line">    // ZSetOperations -&gt; Redis Sort Set 操作</span><br><span class="line">    //---------------------------------------------------------------------</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 设置zset值</span><br><span class="line">     */</span><br><span class="line">    public boolean addZSetValue(String key, Object member, long score)&#123;</span><br><span class="line">        return zSetOperations.add(key, member, score);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 设置zset值</span><br><span class="line">     */</span><br><span class="line">    public boolean addZSetValue(String key, Object member, double score)&#123;</span><br><span class="line">        return zSetOperations.add(key, member, score);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 批量设置zset值</span><br><span class="line">     */</span><br><span class="line">    public long addBatchZSetValue(String key, Set&lt;ZSetOperations.TypedTuple&lt;Object&gt;&gt; tuples)&#123;</span><br><span class="line">        return zSetOperations.add(key, tuples);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 自增zset值</span><br><span class="line">     */</span><br><span class="line">    public void incZSetValue(String key, String member, long delta)&#123;</span><br><span class="line">        zSetOperations.incrementScore(key, member, delta);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 获取zset数量</span><br><span class="line">     */</span><br><span class="line">    public long getZSetScore(String key, String member)&#123;</span><br><span class="line">        Double score = zSetOperations.score(key, member);</span><br><span class="line">        if(score==null)&#123;</span><br><span class="line">            return 0;</span><br><span class="line">        &#125;else&#123;</span><br><span class="line">            return score.longValue();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 获取有序集 key 中成员 member 的排名 。其中有序集成员按 score 值递减 (从小到大) 排序。</span><br><span class="line">     */</span><br><span class="line">    public Set&lt;ZSetOperations.TypedTuple&lt;Object&gt;&gt; getZSetRank(String key, long start, long end)&#123;</span><br><span class="line">        return zSetOperations.rangeWithScores(key, start, end);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">    //---------------------------------------------------------------------</span><br><span class="line">    // listOperations -&gt; Redis List() 操作</span><br><span class="line">    //---------------------------------------------------------------------</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 添加list列表</span><br><span class="line">     */</span><br><span class="line">    public void addListValue(String key,Object list)&#123;</span><br><span class="line">        listOperations.leftPush(key,list);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 获取指定Key对应的list</span><br><span class="line">     */</span><br><span class="line">    public Object getListValue(String key)&#123;</span><br><span class="line">        return listOperations.leftPop(key);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    //---------------------------------------------------------------------</span><br><span class="line">    // setOperations -&gt; Redis Set() 操作</span><br><span class="line">    //---------------------------------------------------------------------</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 添加Set集合集合</span><br><span class="line">     */</span><br><span class="line">    public void addSetValue(String key,Object list)&#123;</span><br><span class="line">        setOperations.add(key,list);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 获取指定Key对应的set</span><br><span class="line">     */</span><br><span class="line">    public Object getSetValue(String key)&#123;</span><br><span class="line">        return setOperations.members(key);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    /**</span><br><span class="line">     * 获取并移除指定key的值</span><br><span class="line">     */</span><br><span class="line">    public Object popSetValue(String key)&#123;</span><br><span class="line">        return setOperations.pop(key);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2019-12-05T06:12:56.156Z" itemprop="dateUpdated">2019年12月05日 14:12:56</time>
+</span><br>
+
+
+        
+    </div>
+    
+    <footer>
+        <a href="https://raoyangsheng.com">
+            <img src="/img/avatar1.png" alt="Jason Rao">
+            Jason Rao
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Redis/">Redis</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://raoyangsheng.com/2017/10/it-redis-01.html&title=《Redis工具类对各种数据类型的操作》 — Jason Rao's Blog&pic=https://raoyangsheng.com/img/avatar1.png" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://raoyangsheng.com/2017/10/it-redis-01.html&title=《Redis工具类对各种数据类型的操作》 — Jason Rao's Blog&source=饶扬胜,饶扬胜博客,架构师博客,全栈技术,分布式架构,Jason Rao,raoyangsheng" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://raoyangsheng.com/2017/10/it-redis-01.html" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Redis工具类对各种数据类型的操作》 — Jason Rao's Blog&url=https://raoyangsheng.com/2017/10/it-redis-01.html&via=https://raoyangsheng.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://raoyangsheng.com/2017/10/it-redis-01.html" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2017/10/it-git-02.html" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">git remote: HTTP Basic: Access denied 错误解决办法</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2017/10/it-git-01.html" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Git常用命令列表</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Valine Comments -->
+    <div class="comments vcomment" id="comments"></div>
+    <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+    <script src="//unpkg.com/valine@latest/dist/Valine.min.js"></script>
+    <!-- Valine Comments script -->
+    <script>
+        var GUEST_INFO = ['nick','mail','link'];
+        var guest_info = 'nick,mail,link'.split(',').filter(function(item){
+          return GUEST_INFO.indexOf(item) > -1
+        });
+        new Valine({
+            el: '#comments',
+            notify: 'false' == 'true',
+            verify: 'false' == 'true',
+            appId: "V4nHXQbS7PkL3LklG3NCKoRB-gzGzoHsz",
+            appKey: "9UUGXtqUteOGsDhhYR12P9as",
+            avatar: "mm",
+            placeholder: "……在这里说点什么吧",
+            guest_info: guest_info.length == 0 ? GUEST_INFO : guest_info,
+            pageSize: "10"
+        })
+    </script>
+    <!-- Valine Comments end -->
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏~
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/weixinpay.png" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/weixinpay.png" data-alipay="/img/alipay.png">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <!-- 
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>博客内容遵循 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+        </p>
+    </div>
+    -->
+    <div class="bottom">
+        <p><span>Jason Rao &copy; 2010 - 2019</span>
+            <span>
+                    <!-- <a href="http://www.beian.miit.gov.cn/" target="_blank">粤ICP备17034104号-1</a><br> -->
+
+                
+                <a href="http://www.beian.miit.gov.cn/" target="_blank">粤ICP备19120775号</a><br>
+                  
+                
+            </span>
+        </p>
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+    </div>
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+    </script>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://raoyangsheng.com/2017/10/it-redis-01.html&title=《Redis工具类对各种数据类型的操作》 — Jason Rao's Blog&pic=https://raoyangsheng.com/img/avatar1.png" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://raoyangsheng.com/2017/10/it-redis-01.html&title=《Redis工具类对各种数据类型的操作》 — Jason Rao's Blog&source=饶扬胜,饶扬胜博客,架构师博客,全栈技术,分布式架构,Jason Rao,raoyangsheng" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://raoyangsheng.com/2017/10/it-redis-01.html" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Redis工具类对各种数据类型的操作》 — Jason Rao's Blog&url=https://raoyangsheng.com/2017/10/it-redis-01.html&via=https://raoyangsheng.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://raoyangsheng.com/2017/10/it-redis-01.html" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMYAAADGCAAAAACs8KCBAAACLElEQVR42u3aS5LCMAxFUfa/6fSULkK4TzJURb4ZdYV07MNA6OPHA1/H00Weeb3IO8kqrUuGDBm3ZZDl009f33/9ZLruCVWGDBkbMN5FsNozPIy+2zpfV4YMGTJI0CThsrZ1GTJkyOgEXF5q1pAyZMiQUStiScnaSQd/VIvLkCHjhgweNH//91fmGzJkyLgV4wivtNG/Kvh+2JUMGTJGM3iAI1tJS9NOwJUhQ8ZujOuG2qowuqoB94EqQ4aMcYxa1VsrOMk4kwflf3dkyJCxAaN2qDRtxnFePACQIUPGBgx+tCJofuGQuvi0iAwZMsYxvlHE8q+Dx88gBMuQIWM0I03L0oBYGwbwgYQMGTKmMmpNeRIWSUJZw5/clyFDxmhGJ6VL0zXe2uuEYBkyZExl1MYDfKPpmJMX2DJkyNiBkRaWJESmd/iX9fY9MmTIGM1I2/GdMQDfHBlVypAhYzdGmsDx5dNmWVrEypAhYx9G2u5P077a4KHzXzJkyJjHqBWx6diAp5586ye/GzJkyBjN4KlevzGXJnwIJkOGjA0YaTlaOyrRL5s/1OIyZMgYxzjCix+t6ATZ6/vxKQ8ZMmTcnNEJdrW0kmxl7dtkyJAxg0HCJV8+bZkVh5TXtbgMGTKGMtLA10kBO2kfqsVlyJCxPYM363npu+BwhgwZMmSAZ/iBjHSogL5EGTJkbMDgB7lSfH/AgMKxDBkyRjN46bi29Z8ezuA/AzJkyBjE+ANgqiLgBDk0QwAAAABJRU5ErkJggg==" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+</body>
+</html>
